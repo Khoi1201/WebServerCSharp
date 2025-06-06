@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using WebServerCSharp.Extensions;
 
 namespace WebServerCSharp
 {
@@ -10,8 +12,17 @@ namespace WebServerCSharp
     {
         static void Main(string[] args)
         {
-            WebServer.Start();
+            string websitePath = GetWebsitePath();
+            WebServer.Start(websitePath);
             Console.ReadLine();
+        }
+        public static string GetWebsitePath()
+        {
+            // Path of our exe.
+            string websitePath = Assembly.GetExecutingAssembly().Location;
+            websitePath = websitePath.LeftOfRightmostOf("\\").LeftOfRightmostOf("\\").LeftOfRightmostOf("\\").LeftOfRightmostOf("\\") + "\\Website";
+
+            return websitePath;
         }
     }
 }
