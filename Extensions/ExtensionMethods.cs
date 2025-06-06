@@ -24,7 +24,7 @@ namespace WebServerCSharp.Extensions
         }
         public static string RightOfRightmostOf(this string src, char c)
         {
-            string ret = src;
+            string ret = "";
             int idx = src.LastIndexOf(c);
             if (idx != -1)
             {
@@ -35,7 +35,7 @@ namespace WebServerCSharp.Extensions
         }
         public static string LeftOfRightmostOf(this string src, string substring)
         {
-            string ret = src ;
+            string ret = "";
             int idx = src.LastIndexOf(substring);
             if (idx != -1)
             {
