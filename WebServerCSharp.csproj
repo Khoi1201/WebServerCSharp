@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Folder Include="Website\Images\" />
-    <Folder Include="Website\Pages\" />
     <Folder Include="Website\Scripts\" />
   </ItemGroup>
 

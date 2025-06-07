@@ -13,6 +13,7 @@ namespace WebServerCSharp
         static void Main(string[] args)
         {
             string websitePath = GetWebsitePath();
+            WebServer.onError = ErrorHandler;
             WebServer.Start(websitePath);
             Console.ReadLine();
         }
@@ -23,6 +24,35 @@ namespace WebServerCSharp
             websitePath = websitePath.LeftOfRightmostOf("\\").LeftOfRightmostOf("\\").LeftOfRightmostOf("\\").LeftOfRightmostOf("\\") + "\\Website";
 
             return websitePath;
+        }
+
+        private static string ErrorHandler(WebServer.ServerError error)
+        {
+            string ret = null;
+
+            switch (error)
+            {
+                case WebServer.ServerError.ExpiredSession:
+                    ret = "/ErrorPages/expiredSession.html";
+                    break;
+                case WebServer.ServerError.FileNotFound:
+                    ret = "/ErrorPages/fileNotFound.html";
+                    break;
+                case WebServer.ServerError.NotAuthorized:
+                    ret = "/ErrorPages/notAuthorized.html";
+                    break;
+                case WebServer.ServerError.PageNotFound:
+                    ret = "/ErrorPages/pageNotFound.html";
+                    break;
+                case WebServer.ServerError.ServerError:
+                    ret = "/ErrorPages/serverError.html";
+                    break;
+                case WebServer.ServerError.UnknownType:
+                    ret = "/ErrorPages/unknownType.html";
+                    break;
+            }
+            return ret;
+
         }
     }
 }
