@@ -12,5 +12,6 @@ namespace WebServerCSharp.Classes
         public byte[] Data { get; set; }
         public string ContentType { get; set; }
         public Encoding Encoding { get; set; }
+        public WebServer.ServerError Error { get; set; }
     }
 }

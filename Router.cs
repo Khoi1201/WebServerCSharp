@@ -4,9 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using WebServerCSharp.Classes;
 using WebServerCSharp.Extensions;
 
-namespace WebServerCSharp.Classes
+namespace WebServerCSharp
 {
     internal class Router
     {
@@ -48,7 +49,7 @@ namespace WebServerCSharp.Classes
         private ResponsePacket FileLoader(string fullPath, string ext, ExtensionInfo extInfo)
         {
             string text = File.ReadAllText(fullPath);
-            ResponsePacket ret = new () { Data = Encoding.UTF8.GetBytes(text), ContentType = extInfo.ContentType, Encoding = Encoding.UTF8 };
+            ResponsePacket ret = new() { Data = Encoding.UTF8.GetBytes(text), ContentType = extInfo.ContentType, Encoding = Encoding.UTF8 };
 
             return ret;
         }
@@ -58,7 +59,7 @@ namespace WebServerCSharp.Classes
         /// </summary>
         private ResponsePacket PageLoader(string fullPath, string ext, ExtensionInfo extInfo)
         {
-            ResponsePacket ret = new ();
+            ResponsePacket ret = new();
 
             if (fullPath == WebsitePath) // If nothing follows the domain name or IP, then default to loading index.html.
             {
@@ -66,7 +67,7 @@ namespace WebServerCSharp.Classes
             }
             else
             {
-                if (String.IsNullOrEmpty(ext))
+                if (string.IsNullOrEmpty(ext))
                 {
                     // No extension, so we make it ".html"
                     fullPath = fullPath + ".html";
@@ -91,6 +92,10 @@ namespace WebServerCSharp.Classes
                 string fullPath = Path.Combine(WebsitePath, path.RightOf('/'));
                 fullPath = fullPath.Replace("/", "\\");
                 ret = extInfo.Loader(fullPath, ext, extInfo);
+            }
+            else
+            {
+                ret = new ResponsePacket() { Error = WebServer.ServerError.UnknownType };
             }
 
             return ret;

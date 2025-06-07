@@ -14,7 +14,7 @@ namespace WebServerCSharp
     /// <summary>
     /// Create webserver, must run VS with administration privilege to use 
     /// </summary>
-    public static class WebServer
+    public class WebServer
     {
         /// <summary>
         /// Returns list of IP addresses assigned to localhost network devices, such as hardwired ethernet, wireless, etc.
@@ -23,6 +23,17 @@ namespace WebServerCSharp
         public static int maxSimultaneousConnections = 20;
         private static Semaphore sem = new Semaphore(maxSimultaneousConnections, maxSimultaneousConnections);
         private static Router router = new Router();
+        public static Func<WebServer.ServerError, string> onError;
+        public enum ServerError
+        {
+            OK,
+            ExpiredSession,
+            NotAuthorized,
+            FileNotFound,
+            PageNotFound,
+            ServerError,
+            UnknownType,
+        }
 
         private static List<IPAddress> GetLocalHostIPs()
         {
@@ -97,16 +108,23 @@ namespace WebServerCSharp
                 path = url.Substring(0, url.IndexOf('?')); // Only the path, not any of the parameters
                 paramsString = request.RawUrl.Substring(url.IndexOf('?'), url.Length - url.IndexOf('?')); // Params on the URL itself follow the URL and are separated by a ?
                 kvParams = ConvertStringParamsToDictionary(paramsString); // Extract into key-value entries
-                }
+                }   
                 else
                 {
                     path = url;
                 }
 
-                    verb = request.HttpMethod; // get, post, delete, etc.
+                verb = request.HttpMethod; // get, post, delete, etc.
 
                 responsePacket = router.Route(verb, path, kvParams);
-                Respond(context.Response, responsePacket);
+
+                if (responsePacket.Error != ServerError.OK)
+                {
+                    //responsePacket = router.Route("GET", onError(responsePacket.Error), null);
+                    responsePacket.Redirect = onError(responsePacket.Error);
+                }
+
+                Respond(context.Request ,context.Response, responsePacket);
             }
             catch (Exception)
             {
@@ -116,13 +134,22 @@ namespace WebServerCSharp
 
 
         }
-        private static void Respond(HttpListenerResponse response, ResponsePacket resp)
+        private static void Respond(HttpListenerRequest request, HttpListenerResponse response, ResponsePacket resp)
         {
-            response.ContentType = resp.ContentType;
-            response.ContentLength64 = resp.Data.Length;
-            response.OutputStream.Write(resp.Data, 0, resp.Data.Length);
-            response.ContentEncoding = resp.Encoding;
-            response.StatusCode = (int)HttpStatusCode.OK;
+            if (String.IsNullOrEmpty(resp.Redirect))
+            {
+                response.ContentType = resp.ContentType;
+                response.ContentLength64 = resp.Data.Length;
+                response.OutputStream.Write(resp.Data, 0, resp.Data.Length);
+                response.ContentEncoding = resp.Encoding;
+                response.StatusCode = (int)HttpStatusCode.OK;
+            }
+            else
+            {
+                response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.Redirect("http://" + request.UserHostAddress + resp.Redirect);
+            }
+
             response.OutputStream.Close();
         }
         private static Dictionary<string, string> ConvertStringParamsToDictionary(string parms)
